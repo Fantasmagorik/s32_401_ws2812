@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "C:\projects\stm32\401\s32_401_ws2812\MDK-ARM\ws2812.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -85,7 +86,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+	ws2812_init(10, RGB);
   /* USER CODE END Init */
 
   /* Configure the system clock */

@@ -20,7 +20,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f4xx_it.h"
-#include "C:\Users\Maksim\Documents\stm\test\MDK-ARM\ws2812.h"
+#include "C:\projects\stm32\401\s32_401_ws2812\MDK-ARM\ws2812.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
@@ -235,20 +235,22 @@ void DMA1_Stream6_IRQHandler(void)
   * @brief This function handles TIM1 trigger and commutation interrupts and TIM11 global interrupt.
   */
 void TIM1_TRG_COM_TIM11_IRQHandler(void)
-{	extern uint16_t mass[];
+{
   /* USER CODE BEGIN TIM1_TRG_COM_TIM11_IRQn 0 */
-
+	//extern uint16_t mass[];
   /* USER CODE END TIM1_TRG_COM_TIM11_IRQn 0 */
   HAL_TIM_IRQHandler(&htim11);
   /* USER CODE BEGIN TIM1_TRG_COM_TIM11_IRQn 1 */
 	if(++blink_counter == 40)	{
 		GPIOC->ODR ^= (1 << 13);
 		blink_counter = 0;
-		DMA1_Stream2->M0AR = (uint32_t)getColorData(colors[colorIndex]);
+		ws2812_fill(colors[colorIndex]);
+		DMA1_Stream2->M0AR = (uint32_t) ws2812_show();
+		//DMA1_Stream2->M0AR = (uint32_t) mass;
 		if(++colorIndex > 3)
 				colorIndex = 0;
 		DMA1->LIFCR = 61 << 16;
-		DMA1_Stream2->NDTR = 33;
+		DMA1_Stream2->NDTR = 255;
 		DMA1_Stream2->CR |= DMA_SxCR_EN;
 	}
 
