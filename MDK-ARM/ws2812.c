@@ -39,7 +39,7 @@ void ws2812_fill(uint32_t color)	{
 uint16_t* ws2812_show()	{
 	int i, x;
 	for(x = 0; x < ws2812_count; x++)
-		for(i = 0; i < 32; i++){
+		for(i = 0; i < 24; i++){
 			ws2812_memory[i + x * 32] = (ws2812_pixels[x] & 1 << i)? ONE : ZERO;
 	}
 		return ws2812_memory;

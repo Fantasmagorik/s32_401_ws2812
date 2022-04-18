@@ -213,7 +213,7 @@ void DMA1_Stream2_IRQHandler(void)
   /* USER CODE END DMA1_Stream2_IRQn 0 */
   HAL_DMA_IRQHandler(&hdma_tim3_ch4_up);
   /* USER CODE BEGIN DMA1_Stream2_IRQn 1 */
-
+	TIM3->CCR1 = 0;
   /* USER CODE END DMA1_Stream2_IRQn 1 */
 }
 
@@ -251,6 +251,7 @@ void TIM1_TRG_COM_TIM11_IRQHandler(void)
 				colorIndex = 0;
 		DMA1->LIFCR = 61 << 16;
 		DMA1_Stream2->NDTR = 255;
+		DMA1_Stream2->CR |= DMA_SxCR_TCIE;
 		DMA1_Stream2->CR |= DMA_SxCR_EN;
 	}
 
