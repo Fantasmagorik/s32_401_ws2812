@@ -34,7 +34,6 @@
 /* USER CODE BEGIN PD */
 	
 #define ledCount 13
-uint16_t mass[] = { ZERO, ONE, ZERO, ONE, ZERO, ZERO, ZERO, ONE, ZERO, ZERO, ONE, ONE, ONE, ONE, ZERO, ONE, ZERO, ONE, ZERO, ZERO, ZERO, ONE, ZERO, ZERO, ONE, ONE, ONE, ONE, ZERO, ONE, ZERO, ZERO, 0};
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -51,12 +50,11 @@ TIM_HandleTypeDef htim11;
 DMA_HandleTypeDef hdma_tim3_ch4_up;
 
 /* USER CODE BEGIN PV */
-#define COLORS_COUNT	3
-uint32_t colors[] = {0xf00000, 0xf000,  0xf0, 0xf00, 0xf, 0xffffff};
-//uint32_t colors[] = {0xf0000000, 0xf000000, 0xf00000, 0xf0000, 0xf000, 0xf00, 0xf0, 0xf, 0xffffff};
+#define COLORS_COUNT	6
+uint32_t colors[COLORS_COUNT] = {colorBLUE, colorCYAN, colorGREEN, colorORANGE, colorPINK, colorRED};
 int colorIndex = 0;
 int ledNo = 0;
-int ledStep = 1;
+int ledStep = 0;
 _color clr;
 /* USER CODE END PV */
 
@@ -75,7 +73,7 @@ static void MX_TIM11_Init(void);
 /* USER CODE BEGIN 0 */
 
 void led_process(){
-	#define STEP_COUNT	5 
+	#define STEP_COUNT	8 
 
 	
 	ws2812_setPixelColor(ledNo, getStepColor(colors[colorIndex], (colorIndex == COLORS_COUNT - 1)? colors[0]: colors[colorIndex + 1], ledStep, STEP_COUNT));
@@ -89,13 +87,8 @@ void led_process(){
 		}
 		ledStep = 1;
 	}
-		DMA1_Stream2->M0AR = (uint32_t) ws2812_show();
-		//DMA1_Stream2->M0AR = (uint32_t) mass;
-		DMA1->LIFCR = 61 << 16;
-		DMA1_Stream2->NDTR = ledCount * 24 ;
-		DMA1_Stream2->CR |= DMA_SxCR_TCIE;
-		TIM3->CNT = 0;
-		DMA1_Stream2->CR |= DMA_SxCR_EN;
+	ws2812_show();
+		
 }
 /* USER CODE END 0 */
 
@@ -116,7 +109,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-	ws2812_init(ledCount, RGB);
+	ws2812_init(ledCount, GRB);
 	clr.pixelColor = 0;
   /* USER CODE END Init */
 
@@ -142,8 +135,7 @@ int main(void)
 	TIM3->DIER = TIM_DIER_UDE;
 	TIM3->CCER |= TIM_CCER_CC1E;
 	TIM3->CR1 |= TIM_CR1_CEN;
-	
-	DMA1_Stream2->M0AR = (uint32_t) mass;
+
 	DMA1_Stream2->PAR  = (uint32_t) &TIM3->CCR1;
 	DMA1_Stream2->CR = (5 << 25) + DMA_SxCR_MINC  + DMA_SxCR_DIR_0 + DMA_SxCR_MSIZE_0 + DMA_SxCR_PSIZE_0;	//5 channel selected  //add MINC, DIR = 1, MSIZE = 1, PSIZE = 1
 

@@ -52,15 +52,15 @@ void ws2812_init(int ledCount, enum colorScheme order)	{
 }
 
 void ws2812_setPixelColor(int pixelNo, int color)	{
-	union ws2812_pixel pixel;
+	_color pixel, scolor;
+	scolor.pixelColor = color;
 	uint8_t tempByte;
 	pixel.pixelColor = color;
 	switch(ws2812_order){
 		case GRB: 
-			tempByte = pixel.byteColor[0];
-			pixel.byteColor[0] = pixel.byteColor[1];
-			pixel.byteColor[1] = pixel.byteColor[2];
-			pixel.byteColor[2] = tempByte;
+			pixel.byteColor[0] = scolor.byteColor[0];
+			pixel.byteColor[1] = scolor.byteColor[2];
+			pixel.byteColor[2] = scolor.byteColor[1];
 			break;
 			
 	}
@@ -85,13 +85,18 @@ void ws2812_fill(uint32_t color)	{
 		ws2812_pixels[i] = pixel.pixelColor;
 }
 
-uint16_t* ws2812_show()	{
+void ws2812_show()	{
 	int i, x;
 	for(x = 0; x < ws2812_count; x++){
 		for(i = 0; i < 24; i++){
 			ws2812_memory[x * 24 + i] = (ws2812_pixels[x] & (1 << (23 - i)))? ONE : ZERO;
 	}
 }
-		
-		return ws2812_memory;
+		DMA1_Stream2->M0AR = (uint32_t) ws2812_memory;
+		//DMA1_Stream2->M0AR = (uint32_t) mass;
+		DMA1->LIFCR = 61 << 16;
+		DMA1_Stream2->NDTR = ws2812_count * 24 ;
+		DMA1_Stream2->CR |= DMA_SxCR_TCIE;
+		while(TIM3->CNT > 5);
+		DMA1_Stream2->CR |= DMA_SxCR_EN;
 }
