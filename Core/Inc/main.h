@@ -33,6 +33,8 @@ extern "C" {
 /* USER CODE BEGIN Includes */
 	#define ZERO	0x22
 	#define ONE		0x43
+	
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -56,7 +58,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
+void led_process(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

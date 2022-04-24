@@ -20,9 +20,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f4xx_it.h"
-#include "C:\projects\stm32\401\s32_401_ws2812\MDK-ARM\ws2812.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "C:\projects\stm32\401\s32_401_ws2812\MDK-ARM\ws2812.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -42,8 +42,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-uint32_t colors[] = {0xff0000, 0xff00, 0xff, 0xffffff};
-int colorIndex = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -57,6 +56,7 @@ int colorIndex = 0;
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
+extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 extern DMA_HandleTypeDef hdma_i2c1_tx;
 extern I2C_HandleTypeDef hi2c1;
 extern DMA_HandleTypeDef hdma_tim3_ch4_up;
@@ -209,11 +209,12 @@ void SysTick_Handler(void)
 void DMA1_Stream2_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Stream2_IRQn 0 */
-
+	int i;
   /* USER CODE END DMA1_Stream2_IRQn 0 */
   HAL_DMA_IRQHandler(&hdma_tim3_ch4_up);
   /* USER CODE BEGIN DMA1_Stream2_IRQn 1 */
 	TIM3->CCR1 = 0;
+	//for(i = 0; i < 1000000; i++);
   /* USER CODE END DMA1_Stream2_IRQn 1 */
 }
 
@@ -238,21 +239,14 @@ void TIM1_TRG_COM_TIM11_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM1_TRG_COM_TIM11_IRQn 0 */
 	//extern uint16_t mass[];
+	static int ledNo;
   /* USER CODE END TIM1_TRG_COM_TIM11_IRQn 0 */
   HAL_TIM_IRQHandler(&htim11);
   /* USER CODE BEGIN TIM1_TRG_COM_TIM11_IRQn 1 */
-	if(++blink_counter == 40)	{
+	if(++blink_counter >= 500)	{
 		GPIOC->ODR ^= (1 << 13);
 		blink_counter = 0;
-		ws2812_fill(colors[colorIndex]);
-		DMA1_Stream2->M0AR = (uint32_t) ws2812_show();
-		//DMA1_Stream2->M0AR = (uint32_t) mass;
-		if(++colorIndex > 3)
-				colorIndex = 0;
-		DMA1->LIFCR = 61 << 16;
-		DMA1_Stream2->NDTR = 255;
-		DMA1_Stream2->CR |= DMA_SxCR_TCIE;
-		DMA1_Stream2->CR |= DMA_SxCR_EN;
+		led_process();
 	}
 
   /* USER CODE END TIM1_TRG_COM_TIM11_IRQn 1 */
@@ -270,6 +264,20 @@ void I2C1_EV_IRQHandler(void)
   /* USER CODE BEGIN I2C1_EV_IRQn 1 */
 
   /* USER CODE END I2C1_EV_IRQn 1 */
+}
+
+/**
+  * @brief This function handles USB On The Go FS global interrupt.
+  */
+void OTG_FS_IRQHandler(void)
+{
+  /* USER CODE BEGIN OTG_FS_IRQn 0 */
+
+  /* USER CODE END OTG_FS_IRQn 0 */
+  HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);
+  /* USER CODE BEGIN OTG_FS_IRQn 1 */
+
+  /* USER CODE END OTG_FS_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

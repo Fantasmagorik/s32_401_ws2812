@@ -18,11 +18,11 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "C:\projects\stm32\401\s32_401_ws2812\MDK-ARM\ws2812.h"
+#include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "C:\projects\stm32\401\s32_401_ws2812\MDK-ARM\ws2812.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -33,7 +33,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 	
-	
+#define ledCount 13
 uint16_t mass[] = { ZERO, ONE, ZERO, ONE, ZERO, ZERO, ZERO, ONE, ZERO, ZERO, ONE, ONE, ONE, ONE, ZERO, ONE, ZERO, ONE, ZERO, ZERO, ZERO, ONE, ZERO, ZERO, ONE, ONE, ONE, ONE, ZERO, ONE, ZERO, ZERO, 0};
 /* USER CODE END PD */
 
@@ -51,7 +51,13 @@ TIM_HandleTypeDef htim11;
 DMA_HandleTypeDef hdma_tim3_ch4_up;
 
 /* USER CODE BEGIN PV */
-
+#define COLORS_COUNT	3
+uint32_t colors[] = {0xf00000, 0xf000,  0xf0, 0xf00, 0xf, 0xffffff};
+//uint32_t colors[] = {0xf0000000, 0xf000000, 0xf00000, 0xf0000, 0xf000, 0xf00, 0xf0, 0xf, 0xffffff};
+int colorIndex = 0;
+int ledNo = 0;
+int ledStep = 1;
+_color clr;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -61,13 +67,36 @@ static void MX_TIM3_Init(void);
 static void MX_DMA_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_TIM11_Init(void);
-/* USER CODE BEGIN PFP */
+/* USER CODE BEGIN PFP */ 
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+void led_process(){
+	#define STEP_COUNT	5 
+
+	
+	ws2812_setPixelColor(ledNo, getStepColor(colors[colorIndex], (colorIndex == COLORS_COUNT - 1)? colors[0]: colors[colorIndex + 1], ledStep, STEP_COUNT));
+	
+	if(++ledStep > STEP_COUNT){
+		if(++ledNo == ledCount)	{
+			if(++colorIndex == COLORS_COUNT){
+				colorIndex = 0;
+			}
+			ledNo = 0;
+		}
+		ledStep = 1;
+	}
+		DMA1_Stream2->M0AR = (uint32_t) ws2812_show();
+		//DMA1_Stream2->M0AR = (uint32_t) mass;
+		DMA1->LIFCR = 61 << 16;
+		DMA1_Stream2->NDTR = ledCount * 24 ;
+		DMA1_Stream2->CR |= DMA_SxCR_TCIE;
+		TIM3->CNT = 0;
+		DMA1_Stream2->CR |= DMA_SxCR_EN;
+}
 /* USER CODE END 0 */
 
 /**
@@ -75,6 +104,7 @@ static void MX_TIM11_Init(void);
   * @retval int
   */
 int main(void)
+
 {
   /* USER CODE BEGIN 1 */
 
@@ -86,7 +116,8 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-	ws2812_init(10, RGB);
+	ws2812_init(ledCount, RGB);
+	clr.pixelColor = 0;
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -102,6 +133,7 @@ int main(void)
   MX_DMA_Init();
   MX_I2C1_Init();
   MX_TIM11_Init();
+  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 	TIM11->DIER = TIM_DIER_UIE;
 	TIM11->CR1 |= TIM_CR1_CEN;
@@ -153,9 +185,9 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 25;
-  RCC_OscInitStruct.PLL.PLLN = 168;
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 4;
+  RCC_OscInitStruct.PLL.PLLN = 336;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV4;
+  RCC_OscInitStruct.PLL.PLLQ = 7;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -277,7 +309,7 @@ static void MX_TIM11_Init(void)
   htim11.Instance = TIM11;
   htim11.Init.Prescaler = 0xff;
   htim11.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim11.Init.Period = 0xfff;
+  htim11.Init.Period = 0xf;
   htim11.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim11.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim11) != HAL_OK)
@@ -321,6 +353,7 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
