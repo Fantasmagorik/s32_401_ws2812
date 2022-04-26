@@ -1,11 +1,12 @@
 #define WS2812_MEMORY_SIZE	321
 #include "main.h"
 #include "C:\projects\stm32\401\s32_401_ws2812\MDK-ARM\ws2812.h"
+#include "C:\projects\stm32\401\s32_401_ws2812\MDK-ARM\it_tim_dma.h"
 
 enum colorScheme ws2812_order;
 
 
-uint16_t ws2812_memory[ws2812_count * 24 + 1];
+uint16_t ws2812_memory[ws2812_count * 24 + 1]; 
 uint32_t ws2812_pixels[32];
  
 uint32_t getStepColor(uint32_t sourceColor, uint32_t needColor, uint32_t currentStep, uint32_t countOfSteps) {
@@ -92,11 +93,6 @@ void ws2812_show()	{
 			ws2812_memory[x * 24 + i] = (ws2812_pixels[x] & (1 << (23 - i)))? ONE : ZERO;
 	}
 }
-		DMA1_Stream2->M0AR = (uint32_t) ws2812_memory;
-		//DMA1_Stream2->M0AR = (uint32_t) mass;
-		DMA1->LIFCR = 61 << 16;
-		DMA1_Stream2->NDTR = ws2812_count * 24 ;
-		DMA1_Stream2->CR |= DMA_SxCR_TCIE;
-		while(TIM3->CNT > 5);
-		DMA1_Stream2->CR |= DMA_SxCR_EN;
+	TIM3_CH_DMA_Send(1, MINC, (uint32_t) ws2812_memory);
+	
 }

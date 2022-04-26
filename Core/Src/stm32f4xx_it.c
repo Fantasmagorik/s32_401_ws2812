@@ -22,7 +22,9 @@
 #include "stm32f4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "C:\projects\stm32\401\s32_401_ws2812\MDK-ARM\ws2812.h"
+#include "C:\projects\stm32\401\s32_401_ws2812\MDK-ARM\it_tim_dma.h"
+
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -214,6 +216,8 @@ void DMA1_Stream2_IRQHandler(void)
   HAL_DMA_IRQHandler(&hdma_tim3_ch4_up);
   /* USER CODE BEGIN DMA1_Stream2_IRQn 1 */
 	TIM3->CCR1 = 0;
+	TIM3_CH_1_IRQHandler();
+	//TIM3->CCR1 = 0;
 	//for(i = 0; i < 1000000; i++);
   /* USER CODE END DMA1_Stream2_IRQn 1 */
 }
@@ -240,14 +244,14 @@ void TIM1_TRG_COM_TIM11_IRQHandler(void)
   /* USER CODE BEGIN TIM1_TRG_COM_TIM11_IRQn 0 */
 	//extern uint16_t mass[];
 	static int ledNo;
-  /* USER CODE END TIM1_TRG_COM_TIM11_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim11);
-  /* USER CODE BEGIN TIM1_TRG_COM_TIM11_IRQn 1 */
 	if(++blink_counter >= 300)	{
 		GPIOC->ODR ^= (1 << 13);
 		blink_counter = 0;
 		led_process();
 	}
+  /* USER CODE END TIM1_TRG_COM_TIM11_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim11);
+  /* USER CODE BEGIN TIM1_TRG_COM_TIM11_IRQn 1 */
 
   /* USER CODE END TIM1_TRG_COM_TIM11_IRQn 1 */
 }

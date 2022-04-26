@@ -73,15 +73,15 @@ static void MX_TIM11_Init(void);
 /* USER CODE BEGIN 0 */
 
 void led_process(){
-	#define STEP_COUNT	8 
+	#define STEP_COUNT	14 
 
 	
-	ws2812_setPixelColor(ledNo, getStepColor(colors[colorIndex], (colorIndex == COLORS_COUNT - 1)? colors[0]: colors[colorIndex + 1], ledStep, STEP_COUNT));
+	ws2812_setPixelColor(ledNo, getStepColor(colors[colorIndex], (colorIndex == COLORS_COUNT - 1)? colors[3]: colors[colorIndex + 1], ledStep, STEP_COUNT));
 	
 	if(++ledStep > STEP_COUNT){
 		if(++ledNo == ledCount)	{
 			if(++colorIndex == COLORS_COUNT){
-				colorIndex = 0;
+				colorIndex = 3;
 			}
 			ledNo = 0;
 		}
@@ -128,8 +128,7 @@ int main(void)
   MX_TIM11_Init();
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
-	TIM11->DIER = TIM_DIER_UIE;
-	TIM11->CR1 |= TIM_CR1_CEN;
+	
 	
 	TIM3->CCR1 = ZERO;
 	TIM3->DIER = TIM_DIER_UDE;
@@ -137,7 +136,9 @@ int main(void)
 	TIM3->CR1 |= TIM_CR1_CEN;
 
 	DMA1_Stream2->PAR  = (uint32_t) &TIM3->CCR1;
-	DMA1_Stream2->CR = (5 << 25) + DMA_SxCR_MINC  + DMA_SxCR_DIR_0 + DMA_SxCR_MSIZE_0 + DMA_SxCR_PSIZE_0;	//5 channel selected  //add MINC, DIR = 1, MSIZE = 1, PSIZE = 1
+	DMA1_Stream2->CR = (5 << 25) + DMA_SxCR_MINC  + DMA_SxCR_DIR_0 /*+ DMA_SxCR_MSIZE_0 */+ DMA_SxCR_PSIZE_0;	//5 channel selected  //add MINC, DIR = 1, MSIZE = 1, PSIZE = 1
+	TIM11->DIER = TIM_DIER_UIE;
+	TIM11->CR1 |= TIM_CR1_CEN;
 
 	
   /* USER CODE END 2 */
@@ -309,7 +310,6 @@ static void MX_TIM11_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN TIM11_Init 2 */
-
   /* USER CODE END TIM11_Init 2 */
 
 }
